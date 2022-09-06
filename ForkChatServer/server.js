@@ -27,7 +27,9 @@ server.on("connection", async (client, request) => {
                 const { recipient, message } = parsedMessage
 
                 if (clients.has(recipient)) {
-                    clients.get(recipient).send(JSON.stringify({ type: "message", message }))
+                    const sender = getUser(client)
+
+                    clients.get(recipient).send(JSON.stringify({ type: "message", sender, message }))
 
                     client.send(JSON.stringify({ type: "status", status: `Message sent to ${recipient}!` }))
                 } 
@@ -83,3 +85,10 @@ web.listen(4201, () => console.log("Server started!"))
 //    key: fs.readFileSync('./ssl/key.key'),
 //    cert: fs.readFileSync('./ssl/certificate.pem')
 //}, web).listen(2082);
+
+function getUser(client) {
+    let username
+    clients.forEach((value, key) => value == client ? username = key : null)
+
+    return username
+}

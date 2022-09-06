@@ -17,7 +17,7 @@ export default class Socket {
                 case "message":
                     const decryptedMessage = await this.encryption.decryptMessage(parsedMessage.message)
 
-                    console.log("Received message! " + decryptedMessage)
+                    console.log(`${parsedMessage.sender} > ${decryptedMessage}`)
                     break
                 case "status":
                     console.log("Status: " + parsedMessage.status)
