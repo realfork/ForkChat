@@ -27,6 +27,8 @@ const socket = new Socket(username, password)
 const encryption = new Encryption(publicKey, privateKey)
 
 async function sendMessage(user, message) {
+    console.log(keyPair.publicKey)
+
     const key = await getKey(username)
     if (!key) return
 

@@ -15,7 +15,7 @@ class Database {
 
     async has(key) {
         try {
-            await this.db.getData(`/${key}`)
+            let data = await this.db.getData(`/${key}`)
             return true
         } catch (e) { return false }
     }

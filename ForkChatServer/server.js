@@ -71,10 +71,10 @@ web.get("/key", async (request, response) => {
     if (!username) return response.json({ error: "Missing arguments!" })
 
     // Check if user is valid
-    if (!Database.has(username)) return response.json({ error: "Invalid user!" })
+    if (!await Database.has(username)) return response.json({ error: "Invalid user!" })
    
     let data = await Database.get(username)
-    response.json({ key: data.publicKey })
+    response.send(data.publicKey)
 })
 web.listen(4201, () => console.log("Server started!"))
 //https.createServer({
