@@ -26,9 +26,9 @@ if (!await login(username, password, keyPair.publicKey)) process.exit()
 const socket = new Socket(username, password)
 const encryption = new Encryption(publicKey, privateKey)
 
-async function sendMessage(user, message) {
-    console.log(keyPair.publicKey)
+await socket.isConnecting()
 
+async function sendMessage(user, message) {
     const key = await getKey(username)
     if (!key) return
 

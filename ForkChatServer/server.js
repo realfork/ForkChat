@@ -9,33 +9,35 @@ const clients = new Map()
 server.on("connection", async (client, request) => {
     // Message Handler
     client.on("message", async (message) => {
-        let formattedMessage = message.split(" ")
-        let command = formattedMessage[0].replaceAll(/[<>]/g, "")
+        const parsedMessage = JSON.parse(message)
 
-        switch (command) {
-            case "Login":
-                let { username, password } = JSON.parse(formattedMessage[1])
-                if (!username || !password || !Database.has(username)) return client.send("<Error> Invalid username or password!")
+        if (!parsedMessage.type) return client.send(JSON.stringify({ type: "error", error: "Missing type arguments!" }))
+
+        switch (parsedMessage.type) {
+            case "login":
+                let { username, password } = parsedMessage
+                if (!username || !password || !await Database.has(username)) return client.send(JSON.stringify({ type: "error", error: "Invalid username or password!" }))
 
                 if ((await Database.get(username)).hashedPassword != crypto.createHash("sha256").update(password).digest("hex")) 
-                    return client.send("<Error> Invalid username or password!")
+                    return client.send(JSON.stringify({ type: "error", error: "Invalid username or password!" }))
 
                 clients.set(username, client)
-                client.send("<Status> Logged into socket!")
                 break
-            case "Message":
-                let messageString = message.substring(message.indexOf(formattedMessage[1]))
+            case "message":
+                const { recipient, message } = parsedMessage
 
-                let recipient = message.split(":")[0]
-                let returnMessage = messageString.substring(messageString.indexOf(recipient))
+                if (clients.has(recipient)) {
+                    clients.get(recipient).send(JSON.stringify({ type: "message", message }))
 
-                if (clients.has(recipient)) clients.get(recipient).send("<Message> " + returnMessage)
-                else client.send("<Status> Invalid user! Message failed to send!")
+                    client.send(JSON.stringify({ type: "status", status: `Message sent to ${recipient}!` }))
+                } 
+                // ADD MESSAGE CACHING FOR WHEN OFFLINE
+                else client.send(JSON.stringify({ type: "status", status: "Invalid user! Message failed to send!" }))
                 break    
         }
     })
 
-    client.on("close", () => clients.delete(request.socket.remoteAddress))
+    client.on("close", () => clients.delete(client))
 })
 
 // Web server
@@ -50,10 +52,10 @@ web.get("/login", async (request, response) => {
     let { username, password, publicKey } = request.query
     if (!username || !password || !publicKey) return response.json({ error: "Missing arguments!" })
 
-    // Register 
-    if (!Database.has(username)) await Database.add(username, { hashedPassword, publicKey })
-   
     let hashedPassword = crypto.createHash("sha256").update(password).digest("hex")
+
+    // Register 
+    if (!await Database.has(username)) await Database.add(username, { hashedPassword, publicKey })
     let data = await Database.get(username)
 
     if (data.hashedPassword == hashedPassword) {

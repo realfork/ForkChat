@@ -5,22 +5,25 @@ export default class Socket {
         // Change URL
         this.client = new WebSocket("ws://localhost:4200/")
 
-        this.client.on("open", () => this.client.send("<Login> " + JSON.stringify({ username, password })))
+        //this.client.on("open", () => this.client.send("<Login> " + JSON.stringify({ username, password })))
+        this.client.on("open", () => this.client.send(JSON.stringify({ type: "login", username, password })))
 
         this.client.on("message", (message) => {
-            let string = message.toString()
-            let formattedMessage = string.split(" ")
-            
-            let command = formattedMessage[0].replaceAll(/[<>]/g, "")
+            const parsedMessage = JSON.parse(message)
 
-            switch (command) {
-                case "Message":
+            switch (parsedMessage.type) {
+                case "message":
+                    const encryptedMessage = parsedMessage.message
+
+                    
+
+                    console.log("Received message! " + encryptedMessage)
                     break
-                case "Status":
-                    console.log("Status: " + string.substring(string.indexOf(formattedMessage[1])))
+                case "status":
+                    console.log("Status: " + parsedMessage.status)
                     break    
-                case "Error":
-                    console.log("An error occured: " + string.substring(string.indexOf(formattedMessage[1])))
+                case "error":
+                    console.log("An error occured: " + parsedMessage.error)
                     process.exit()
             }
         })
@@ -29,6 +32,11 @@ export default class Socket {
     }
 
     sendMessage(user, message) {
-        this.client.send(`<Message> ${user}:${message}`)
+        this.client.send(JSON.stringify({ type: "message", recipient: user, message }))
+    }
+
+    async isConnecting() {
+        while (this.client.CONNECTING) {}
+        return false
     }
 }

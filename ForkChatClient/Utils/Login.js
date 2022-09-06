@@ -24,7 +24,7 @@ export async function getDetails() {
 
 export async function login(username, password, publicKey) {
     // Change URL
-    const response = await (await fetch(`http://localhost:4201/login?username=${username}&password=${password}&publicKey=${publicKey}`)).json()
+    const response = await (await fetch(`http://localhost:4201/login?username=${username}&password=${password}&publicKey=${Buffer.from(publicKey).toString("base64")}`)).json()
 
     if (response.error) {
         console.log("Login Error: " + response.error)
