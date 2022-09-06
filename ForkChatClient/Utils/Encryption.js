@@ -14,15 +14,17 @@ export default class Encryption {
         })
     }
     
-    async decryptMessage(encryptedMessage, publicKey) {
+    // ADD SENDER VERIFICATION
+    async decryptMessage(encryptedMessage) { // , publicKey
         const { data: decrypted, signatures } = await openpgp.decrypt({
             message: await openpgp.readMessage({ armoredMessage: encryptedMessage }),
-            verificationKeys: publicKey,
+            //verificationKeys: publicKey,
             decryptionKeys: this.privateKey
         })
+        return decrypted
     
-        if (!verifySignature(signatures)) return null
-        else return decrypted
+        //if (!verifySignature(signatures)) return null
+        //else return decrypted
     }
     
     async verifySignature(signature) {

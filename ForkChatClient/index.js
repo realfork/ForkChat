@@ -23,17 +23,14 @@ console.log("Successfully generated public and private keys!")
 if (!await login(username, password, keyPair.publicKey)) process.exit()
 
 // Create helper classes
-const socket = new Socket(username, password)
 const encryption = new Encryption(publicKey, privateKey)
-
-await socket.isConnecting()
+const socket = new Socket(username, password, encryption)
 
 async function sendMessage(user, message) {
     const key = await getKey(username)
     if (!key) return
 
-    const encryptedMessage = encryption.encryptMessage(message, key)
-    socket.sendMessage(user, encryptedMessage)
+    socket.sendMessage(user, message, key)
 }
 
-sendMessage("fork", "hi")
+setTimeout(async () => await sendMessage("fork", "hi"), 1000)

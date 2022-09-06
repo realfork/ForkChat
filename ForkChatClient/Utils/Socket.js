@@ -1,23 +1,23 @@
 import WebSocket from "ws"
 
 export default class Socket {
-    constructor(username, password) {
+    constructor(username, password, encryption) {
+        this.encryption = encryption
+
         // Change URL
         this.client = new WebSocket("ws://localhost:4200/")
 
         //this.client.on("open", () => this.client.send("<Login> " + JSON.stringify({ username, password })))
         this.client.on("open", () => this.client.send(JSON.stringify({ type: "login", username, password })))
 
-        this.client.on("message", (message) => {
+        this.client.on("message", async (message) => {
             const parsedMessage = JSON.parse(message)
 
             switch (parsedMessage.type) {
                 case "message":
-                    const encryptedMessage = parsedMessage.message
+                    const decryptedMessage = await this.encryption.decryptMessage(parsedMessage.message)
 
-                    
-
-                    console.log("Received message! " + encryptedMessage)
+                    console.log("Received message! " + decryptedMessage)
                     break
                 case "status":
                     console.log("Status: " + parsedMessage.status)
@@ -31,12 +31,9 @@ export default class Socket {
         this.client.on("close", () => console.log("Connection closed."))
     }
 
-    sendMessage(user, message) {
-        this.client.send(JSON.stringify({ type: "message", recipient: user, message }))
-    }
+    async sendMessage(user, message, key) {
+        const encryptedMessage = await this.encryption.encryptMessage(message, key)
 
-    async isConnecting() {
-        while (this.client.CONNECTING) {}
-        return false
+        this.client.send(JSON.stringify({ type: "message", recipient: user, message: encryptedMessage }))
     }
 }

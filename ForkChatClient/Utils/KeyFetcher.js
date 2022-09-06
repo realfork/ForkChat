@@ -1,8 +1,6 @@
 import * as openpgp from "openpgp"
 import fetch from "node-fetch"
 
-const keyRegex = /-----BEGIN PGP PUBLIC KEY BLOCK-----(.*)-----END PGP PUBLIC KEY BLOCK-----/s
-
 export async function getKey(username) {
     const response = await (await fetch(`http://localhost:4201/key?username=${username}`)).text()
 
