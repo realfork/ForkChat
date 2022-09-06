@@ -30,8 +30,6 @@ server.on("connection", async (client, request) => {
                     const sender = getUser(client)
 
                     clients.get(recipient).send(JSON.stringify({ type: "message", sender, message }))
-
-                    client.send(JSON.stringify({ type: "status", status: `Message sent to ${recipient}!` }))
                 } 
                 // ADD MESSAGE CACHING FOR WHEN OFFLINE
                 else client.send(JSON.stringify({ type: "status", status: "Invalid user! Message failed to send!" }))

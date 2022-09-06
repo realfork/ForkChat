@@ -1,6 +1,7 @@
 import * as openpgp from "openpgp"
 
 import { getDetails, login } from "./Utils/Login.js"
+import { promptMessages } from "./Utils/Messenger.js"
 import { getKey } from "./Utils/KeyFetcher.js"
 import Socket from "./Utils/Socket.js"
 import Encryption from "./Utils/Encryption.js"
@@ -26,11 +27,16 @@ if (!await login(username, password, keyPair.publicKey)) process.exit()
 const encryption = new Encryption(publicKey, privateKey)
 const socket = new Socket(username, password, encryption)
 
-async function sendMessage(user, message) {
-    const key = await getKey(username)
-    if (!key) return
+async function loop() {
+    while (true) {
+        const { recipient, message } = await promptMessages()
+        if (!recipient || !message) continue
 
-    socket.sendMessage(user, message, key)
-}
+        const key = await getKey(recipient)
+        if (!key) continue
 
-setTimeout(async () => await sendMessage("fork", "hi"), 1000)
+        socket.sendMessage(recipient, message, key)
+
+        await new Promise(resolve => setTimeout(resolve, 2500))
+    }
+} loop()
