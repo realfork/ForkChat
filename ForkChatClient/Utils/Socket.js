@@ -7,7 +7,6 @@ export default class Socket {
         // Change URL
         this.client = new WebSocket("ws://localhost:4200/")
 
-        //this.client.on("open", () => this.client.send("<Login> " + JSON.stringify({ username, password })))
         this.client.on("open", () => this.client.send(JSON.stringify({ type: "login", username, password })))
 
         this.client.on("message", async (message) => {
@@ -17,7 +16,7 @@ export default class Socket {
                 case "message":
                     const decryptedMessage = await this.encryption.decryptMessage(parsedMessage.message)
 
-                    console.log(`${parsedMessage.sender} > ${decryptedMessage}`)
+                    console.log(`\n${parsedMessage.sender} > ${decryptedMessage}`)
                     break
                 case "status":
                     console.log("Status: " + parsedMessage.status)
